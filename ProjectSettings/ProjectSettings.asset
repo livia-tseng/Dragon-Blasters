@@ -800,7 +800,7 @@ PlayerSettings:
   embeddedLinuxEnableGamepadInput: 1
   hmiLogStartupTiming: 0
   hmiCpuConfiguration: 
-  apiCompatibilityLevel: 6
+  apiCompatibilityLevel: 3
   activeInputHandler: 0
   windowsGamepadBackendHint: 0
   cloudProjectId: bd102931-c1f0-40c9-82b6-cddf65d9b5a7
