@@ -469,7 +469,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 2
   m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
   m_Color: {r: 0.14447261, g: 0.9811321, b: 0.0046279924, a: 1}
   m_FlipX: 0
@@ -624,7 +624,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77234d9ab9bd646ce91f4b64c32c9a30, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  serialPortName: /dev/tty.usbmodem2101
+  serialPortName: COM5
   baudRate: 115200
   reticle: {fileID: 1441115998}
   mainCamera: {fileID: 519420031}
@@ -691,7 +691,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: 768e4c9612b50453bb11d928880a0bce, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
