@@ -40,7 +40,7 @@ void loop() {
   float dt = (now - lastTime) / 1000.0;
   lastTime = now;
 
-  pitch = 0.9 * (pitch + gyro.gyro.x * dt * 180 / PI) + 0.06 * accelPitch;
+  pitch = 0.9 * (pitch + gyro.gyro.x * dt * 180 / PI) + 0.1 * accelPitch;
   yawRate = gyro.gyro.z * 180 / PI;
 
   buttonState = digitalRead(buttonPin);
