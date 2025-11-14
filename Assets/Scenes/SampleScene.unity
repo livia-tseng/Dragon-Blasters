@@ -495,14 +495,14 @@ RectTransform:
   m_GameObject: {fileID: 917152422}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.43980414, y: 0.43980414, z: 0.43980414}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1257240527}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 672, y: 0}
+  m_AnchoredPosition: {x: 177, y: 0}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &917152424
@@ -629,14 +629,14 @@ RectTransform:
   m_GameObject: {fileID: 1126477211}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.44021, y: 0.44021, z: 0.44021}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1257240527}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -676, y: 0}
+  m_AnchoredPosition: {x: -293.4, y: 0}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1126477213
@@ -1001,7 +1001,7 @@ Transform:
   m_GameObject: {fileID: 1448562392}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.41124833, y: -0.3025303, z: 0}
+  m_LocalPosition: {x: 1.31, y: -0.36, z: 0}
   m_LocalScale: {x: 0.3, y: 0.3, z: 0.3}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1182,7 +1182,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerId: 1
-  serialPortName: COM5
+  serialPortName: COM4
   baudRate: 115200
   reticle: {fileID: 1441115998}
   mainCamera: {fileID: 519420031}

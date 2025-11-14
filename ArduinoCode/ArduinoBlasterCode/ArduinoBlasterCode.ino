@@ -34,13 +34,13 @@ void loop() {
   mpu.getEvent(&accel, &gyro, &temp);
 
   // Correct pitch from X-axis
-  float accelPitch = atan2(-accel.acceleration.x, accel.acceleration.z) * 180 / PI;
+  float accelPitch = atan2(accel.acceleration.y, accel.acceleration.z) * 180 / PI;
 
   unsigned long now = millis();
   float dt = (now - lastTime) / 1000.0;
   lastTime = now;
 
-  pitch = 0.9 * (pitch + gyro.gyro.x * dt * 180 / PI) + 0.1 * accelPitch;
+  pitch = 0.9 * (pitch + gyro.gyro.y * dt * 180 / PI) + 0.1 * accelPitch;
   yawRate = gyro.gyro.z * 180 / PI;
 
   buttonState = digitalRead(buttonPin);

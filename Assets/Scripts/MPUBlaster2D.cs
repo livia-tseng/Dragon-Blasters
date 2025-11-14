@@ -128,6 +128,7 @@ public class MPUBlaster2D : MonoBehaviour
             SpriteOnClicked clickable = h.GetComponentInParent<SpriteOnClicked>();
             if (clickable != null)
             {
+                // Debug.Log(clickable);
                 clickable.TryHit(playerId);  // <-- score + respawn handled inside
                 return;
             }

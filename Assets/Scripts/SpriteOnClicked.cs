@@ -43,7 +43,8 @@ public class SpriteOnClicked : MonoBehaviour
         if (busy || !col.enabled) return;
 
         // Hook your score system here:
-        // if (playerId > 0) ScoreManager.Add(playerId, 1);
+        // Debug.Log($"TryHit" + playerId);
+        if(playerId > 0) GameManager.Add(playerId, 1);
 
         StartCoroutine(DieThenRespawn());
     }
