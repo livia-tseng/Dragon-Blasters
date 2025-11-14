@@ -4,9 +4,12 @@ using System.IO.Ports;
 
 public class MPUBlaster2D : MonoBehaviour
 {
+    [Header("Identity")]
+    [Tooltip("Which player this blaster belongs to (1, 2, etc.)")]
+    public int playerId = 1;
+
     [Header("Serial Settings")]
-    //public string serialPortName = "/dev/tty.usbmodem2101";  // Livia's Mac
-    public string serialPortName = "COM5"; // Samuel's Laptop
+    public string serialPortName = "COM5"; // or /dev/tty.usbmodem2101 on liv's mac
     public int baudRate = 115200;
 
     [Header("References")]
@@ -17,6 +20,12 @@ public class MPUBlaster2D : MonoBehaviour
     [Range(0f, 1f)] public float smoothing = 0.95f;
     public float moveScale = 0.01f;
     public float mountPitchOffset = 0f;
+
+    [Header("Hit Detection")]
+    [Tooltip("Which layers count as shootable (e.g., Dragons)")]
+    public LayerMask hitMask = ~0;
+    [Tooltip("Radius around the reticle to check for hits (for a bit of forgiveness).")]
+    public float hitRadius = 0.15f;
 
     private SerialPort serial;
     private float latestPitch, latestGz;
@@ -37,11 +46,11 @@ public class MPUBlaster2D : MonoBehaviour
             serial = new SerialPort(serialPortName, baudRate);
             serial.ReadTimeout = 100;
             serial.Open();
-            Debug.Log("✅ Serial opened: " + serialPortName);
+            Debug.Log($"✅ P{playerId}: Serial opened on {serialPortName}");
         }
         catch (Exception e)
         {
-            Debug.LogError("❌ Could not open serial port: " + e.Message);
+            Debug.LogError($"❌ P{playerId}: Could not open serial port {serialPortName}: {e.Message}");
         }
     }
 
@@ -60,7 +69,6 @@ public class MPUBlaster2D : MonoBehaviour
                     float.TryParse(parts[2], out latestGz);
                     int.TryParse(parts[3], out triggerPressed);
                 }
-
             }
             catch { }
         }
@@ -76,7 +84,7 @@ public class MPUBlaster2D : MonoBehaviour
         {
             pitchOffset = filteredPitch;
             yawOffset = filteredYaw;
-            Debug.Log($"🔧 Calibrated center! PitchOffset={pitchOffset:F2}, YawOffset={yawOffset:F2}");
+            Debug.Log($"🔧 P{playerId} calibrated: PitchOffset={pitchOffset:F2}, YawOffset={yawOffset:F2}");
         }
 
         // --- Apply offsets + mount correction ---
@@ -84,7 +92,7 @@ public class MPUBlaster2D : MonoBehaviour
         float displayYaw = (filteredYaw - yawOffset);
 
         // --- Move reticle ---
-        if (reticle)
+        if (reticle && mainCamera)
         {
             Vector3 pos = new Vector3(displayYaw * moveScale, displayPitch * moveScale, 0f);
 
@@ -97,26 +105,33 @@ public class MPUBlaster2D : MonoBehaviour
             reticle.localPosition = pos;
         }
 
+        // --- Trigger edge detection (only on press, not hold) ---
         if (triggerPressed == 1 && lastTrigger == 0)
         {
-            Debug.Log("💥 Trigger pulled!");
-
-            //Fire the projectile
-            Vector2 worldPos = reticle.position;
-            RaycastHit2D hit = Physics2D.Raycast(worldPos, Vector2.zero);
-
-            if (hit.collider != null)
-            {
-                // Simulate a click
-                SpriteOnClicked clickable = hit.collider.GetComponent<SpriteOnClicked>();
-                if (clickable != null)
-                {
-                    // Directly call the same coroutine
-                    clickable.SendMessage("OnMouseDown", SendMessageOptions.DontRequireReceiver);
-                }
-            }
+            Debug.Log($"💥 P{playerId} Trigger pulled!");
+            FireAtReticle();
         }
         lastTrigger = triggerPressed;
+    }
+
+    private void FireAtReticle()
+    {
+        if (!reticle) return;
+
+        Vector2 worldPos = reticle.position;
+
+        // Slight forgiving radius instead of perfect pixel hit
+        Collider2D[] hits = Physics2D.OverlapCircleAll(worldPos, hitRadius, hitMask);
+
+        foreach (var h in hits)
+        {
+            SpriteOnClicked clickable = h.GetComponentInParent<SpriteOnClicked>();
+            if (clickable != null)
+            {
+                clickable.TryHit(playerId);  // <-- score + respawn handled inside
+                return;
+            }
+        }
     }
 
     void OnDisable()
@@ -124,7 +139,7 @@ public class MPUBlaster2D : MonoBehaviour
         if (serial != null && serial.IsOpen)
         {
             serial.Close();
-            Debug.Log("🔌 Serial closed.");
+            Debug.Log($"🔌 P{playerId} serial closed ({serialPortName}).");
         }
     }
 }

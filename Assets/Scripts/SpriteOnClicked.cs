@@ -1,31 +1,22 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Collider2D))]
 public class SpriteOnClicked : MonoBehaviour
 {
     [Header("Respawn")]
-    [Tooltip("Delay (seconds) before respawning.")]
     public float respawnDelay = 0.5f;
-
-    [Tooltip("Optional: Area to respawn in (BoxCollider2D bounds). If null, uses camera view.")]
     public BoxCollider2D spawnArea;
-
-    [Tooltip("Padding from screen edges when using camera bounds (world units).")]
     public Vector2 screenPadding = new Vector2(0.3f, 0.3f);
-
-    [Tooltip("Camera to compute bounds. Defaults to Camera.main.")]
     public Camera cam;
 
     [Header("Visuals (optional)")]
-    public SpriteRenderer spriteRenderer;     // if null, auto-grab
-    public Animator animator;                 // optional Animator
-    public string deathTrigger = "Die";       // leave empty if you don't use it
-    public string reviveTrigger = "Revive";   // leave empty if you don't use it
+    public SpriteRenderer spriteRenderer;
+    public Animator animator;
+    public string deathTrigger = "Die";
+    public string reviveTrigger = "Revive";
 
     [Header("Movement (optional)")]
-    [Tooltip("Reference to your movement script (e.g., SpriteMover2D) to pause during death.")]
     public Behaviour movementScript;
 
     private Collider2D col;
@@ -40,16 +31,27 @@ public class SpriteOnClicked : MonoBehaviour
         if (!cam) cam = Camera.main;
     }
 
+    // Mouse testing – counts as "no player"
     private void OnMouseDown()
     {
-        if (!busy) StartCoroutine(DieThenRespawn());
+        TryHit(-1);
+    }
+
+    /// <summary>Call this from blasters with a playerId (1, 2, etc).</summary>
+    public void TryHit(int playerId)
+    {
+        if (busy || !col.enabled) return;
+
+        // Hook your score system here:
+        // if (playerId > 0) ScoreManager.Add(playerId, 1);
+
+        StartCoroutine(DieThenRespawn());
     }
 
     private IEnumerator DieThenRespawn()
     {
         busy = true;
 
-        // Stop movement
         if (movementScript) movementScript.enabled = false;
         if (rb)
         {
@@ -57,38 +59,31 @@ public class SpriteOnClicked : MonoBehaviour
             rb.angularVelocity = 0f;
         }
 
-        // Play death anim (if any)
         if (animator && !string.IsNullOrEmpty(deathTrigger))
             animator.SetTrigger(deathTrigger);
 
-        // Make unclickable/inactive
         col.enabled = false;
 
-        // Hide sprite if you don't have an animation
-        bool manuallyHidden = false;
+        bool hidden = false;
         if (spriteRenderer && (animator == null || string.IsNullOrEmpty(deathTrigger)))
         {
             spriteRenderer.enabled = false;
-            manuallyHidden = true;
+            hidden = true;
         }
 
         yield return new WaitForSeconds(respawnDelay);
 
-        // Move to new position
         Vector2 respawnPos = GetRespawnPosition();
         if (rb) rb.position = respawnPos;
         else transform.position = new Vector3(respawnPos.x, respawnPos.y, transform.position.z);
 
-        // Show again / revive
         if (animator && !string.IsNullOrEmpty(reviveTrigger))
             animator.SetTrigger(reviveTrigger);
-        if (manuallyHidden && spriteRenderer)
+        if (hidden && spriteRenderer)
             spriteRenderer.enabled = true;
 
-        // Re-enable interaction and movement
         col.enabled = true;
         if (movementScript) movementScript.enabled = true;
-
         busy = false;
     }
 
@@ -103,7 +98,6 @@ public class SpriteOnClicked : MonoBehaviour
         }
         else
         {
-            // Use camera visible rect
             Vector2 min, max;
             GetScreenWorldBounds(out min, out max);
             float x = Random.Range(min.x + screenPadding.x, max.x - screenPadding.x);
