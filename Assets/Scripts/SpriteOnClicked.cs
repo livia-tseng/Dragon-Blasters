@@ -75,6 +75,7 @@ public class SpriteOnClicked : MonoBehaviour
         yield return new WaitForSeconds(respawnDelay);
 
         Vector2 respawnPos = GetRespawnPosition();
+        spriteRenderer.sortingOrder = Random.Range(1, 11);
         if (rb) rb.position = respawnPos;
         else transform.position = new Vector3(respawnPos.x, respawnPos.y, transform.position.z);
 
