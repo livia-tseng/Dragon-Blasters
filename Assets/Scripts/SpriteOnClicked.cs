@@ -19,6 +19,9 @@ public class SpriteOnClicked : MonoBehaviour
     [Header("Movement (optional)")]
     public Behaviour movementScript;
 
+    [Header("Obstacle")]
+    public bool isObstacle = false;
+
     private Collider2D col;
     private Rigidbody2D rb;
     private bool busy;
@@ -40,13 +43,37 @@ public class SpriteOnClicked : MonoBehaviour
     /// <summary>Call this from blasters with a playerId (1, 2, etc).</summary>
     public void TryHit(int playerId)
     {
-        if (busy || !col.enabled) return;
+        if (GameTimer.Instance.isGameOver() || busy || !col.enabled) return;
 
         // Hook your score system here:
         // Debug.Log($"TryHit" + playerId);
-        if(playerId > 0) GameManager.Add(playerId, 1);
+        if (playerId > 0)
+        {
+            if (isObstacle)
+            {
+                GameManager.Add(playerId, -100);
+            }
+            else
+            {
+                GameManager.Add(playerId, 100);
+                StartCoroutine(DieThenRespawn());
 
-        StartCoroutine(DieThenRespawn());
+            }
+        }
+        //mouse
+        else
+        {
+            if (isObstacle)
+            {
+                GameManager.Add(playerId, -100);
+            }
+            else
+            {
+                GameManager.Add(playerId, 100);
+                StartCoroutine(DieThenRespawn());
+
+            }
+        }
     }
 
     private IEnumerator DieThenRespawn()

@@ -35,8 +35,6 @@ public class ObstacleMovement : MonoBehaviour
         // Set initial direction based on mode
         if (mode == MovementMode.Bounce)
         {
-            speed = Random.Range(1f, 5f);
-
             // Any direction
             float angle = Random.Range(0f, 360f);
             Vector2 dir = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
