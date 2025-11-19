@@ -5,12 +5,15 @@ public class GameTimer : MonoBehaviour
 {
     public static GameTimer Instance;
 
+    [Header("Game Objects")]
     public GameObject GameOverScreen;
     public TMP_Text WinnerText;
-
-    public float duration = 60f;
     public TMP_Text timerText;
-    public bool gameOver = false;
+
+    [Header("Time Duration")]
+    public float duration = 60f;
+
+    private bool gameOver = false;
 
     private float timeRemaining;
 
