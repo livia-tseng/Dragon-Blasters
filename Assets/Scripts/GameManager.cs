@@ -36,7 +36,7 @@ public class GameManager : MonoBehaviour
 
     private void RefreshUI()
     {
-        if (p1Text) p1Text.text = $"P1: {p1}";
-        if (p2Text) p2Text.text = $"P2: {p2}";
+        if (p1Text) p1Text.text = $"{p1}";
+        if (p2Text) p2Text.text = $"{p2}";
     }
 }
