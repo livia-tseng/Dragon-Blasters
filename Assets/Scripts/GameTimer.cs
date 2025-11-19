@@ -5,6 +5,9 @@ public class GameTimer : MonoBehaviour
 {
     public static GameTimer Instance;
 
+    public GameObject GameOverScreen;
+    public TMP_Text WinnerText;
+
     public float duration = 60f;
     public TMP_Text timerText;
     public bool gameOver = false;
@@ -14,6 +17,7 @@ public class GameTimer : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        GameOverScreen.SetActive(false);
     }
 
     private void Start()
@@ -46,11 +50,13 @@ public class GameTimer : MonoBehaviour
         timeRemaining = 0f;
 
         Debug.Log("GAME OVER");
-        // TODO: Add whatever you want here:
-        // - Show UI panel
-        // - Stop player movement
-        // - Load new scene
-        // - Fade screen
+
+        GameOverScreen.SetActive(true);
+
+        int winner = GameManager.Instance.Winner();
+        if (winner == 1) WinnerText.text = "Player 1 Wins!";
+        else if (winner == 2) WinnerText.text = "Player 2 Wins!";
+        else WinnerText.text = "Players Tie!";
     }
 
     public bool isGameOver()

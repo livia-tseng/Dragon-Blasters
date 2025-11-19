@@ -39,4 +39,12 @@ public class GameManager : MonoBehaviour
         if (p1Text) p1Text.text = $"{p1}";
         if (p2Text) p2Text.text = $"{p2}";
     }
+
+    public int Winner()
+    {
+        if (p1 > p2) return 1;
+        if (p2 > p1) return 2;
+
+        return 0;
+    }
 }
