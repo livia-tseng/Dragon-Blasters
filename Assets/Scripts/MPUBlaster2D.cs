@@ -18,14 +18,20 @@ public class MPUBlaster2D : MonoBehaviour
 
     [Header("Tuning")]
     [Range(0f, 1f)] public float smoothing = 0.95f;
-    public float moveScale = 0.01f;
+    public float moveScale = 0.2f;
     public float mountPitchOffset = 0f;
+    public float pitchSensitivity = 1.6f;
+    public float yawSensitivity = 2.85f;
 
     [Header("Hit Detection")]
     [Tooltip("Which layers count as shootable (e.g., Dragons)")]
     public LayerMask hitMask = ~0;
     [Tooltip("Radius around the reticle to check for hits (for a bit of forgiveness).")]
     public float hitRadius = 0.15f;
+
+    [Header("Audio")]
+    public AudioSource audioSource;
+    public AudioClip shootSound;
 
     private SerialPort serial;
     private float latestPitch, latestGz;
@@ -40,6 +46,15 @@ public class MPUBlaster2D : MonoBehaviour
     void Start()
     {
         if (mainCamera == null) mainCamera = Camera.main;
+
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+            if (audioSource == null)
+            {
+                audioSource = gameObject.AddComponent<AudioSource>();
+            }
+        }
 
         try
         {
@@ -94,7 +109,7 @@ public class MPUBlaster2D : MonoBehaviour
         // --- Move reticle ---
         if (reticle && mainCamera)
         {
-            Vector3 pos = new Vector3(displayYaw * moveScale, displayPitch * moveScale, 0f);
+            Vector3 pos = new Vector3(displayYaw * moveScale * yawSensitivity, displayPitch * moveScale * pitchSensitivity, 0f);
 
             float camHeight = mainCamera.orthographicSize;
             float camWidth = camHeight * mainCamera.aspect;
@@ -116,6 +131,11 @@ public class MPUBlaster2D : MonoBehaviour
 
     private void FireAtReticle()
     {
+        if (audioSource != null && shootSound != null)
+        {
+            audioSource.PlayOneShot(shootSound);
+        }
+        
         if (!reticle) return;
 
         Vector2 worldPos = reticle.position;

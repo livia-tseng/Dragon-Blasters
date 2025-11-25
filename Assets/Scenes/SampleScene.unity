@@ -1625,8 +1625,10 @@ MonoBehaviour:
   reticle: {fileID: 1448562394}
   mainCamera: {fileID: 519420031}
   smoothing: 0.95
-  moveScale: 0.25
+  moveScale: 0.2
   mountPitchOffset: 0
+  pitchSensitivity: 1.6
+  yawSensitivity: 2.85
   hitMask:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -2879,8 +2881,10 @@ MonoBehaviour:
   reticle: {fileID: 1441115998}
   mainCamera: {fileID: 519420031}
   smoothing: 0.95
-  moveScale: 0.25
+  moveScale: 0.2
   mountPitchOffset: 0
+  pitchSensitivity: 1.6
+  yawSensitivity: 2.85
   hitMask:
     serializedVersion: 2
     m_Bits: 4294967295
