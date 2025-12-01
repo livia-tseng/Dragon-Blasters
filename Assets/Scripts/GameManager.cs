@@ -13,9 +13,15 @@ public class GameManager : MonoBehaviour
     public TMP_Text p2Text;
 
     [Header("Audio")]
-    public AudioSource audioSource;
+    public AudioSource idleMusicSource;
+    public AudioSource gameplayMusicSource;
     public AudioClip idleMusic;
     public AudioClip gameplayMusic;
+    private AudioSource currentMusic;
+    private AudioSource nextMusic;
+
+    public float crossfadeTime = 1.5f; // seconds
+
 
     private int p1, p2;
 
@@ -24,10 +30,61 @@ public class GameManager : MonoBehaviour
         if (Instance && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
 
-        // Start in Idle State
+        // Ensure correct settings
+        idleMusicSource.loop = true;
+        gameplayMusicSource.loop = true;
+
+        idleMusicSource.volume = 1f;
+        gameplayMusicSource.volume = 0f; // start silent
+
+        currentMusic = idleMusicSource;
+        nextMusic = gameplayMusicSource;
+
         State = GameState.Idle;
-        PlayIdleMusic();
+        CrossfadeTo(idleMusic);
     }
+
+    //If we have a transition from idle to start replace ts cuz it sounds buns but its better than the instant cut
+    private void CrossfadeTo(AudioClip newClip)
+    {
+        StopAllCoroutines();
+        StartCoroutine(CrossfadeCoroutine(newClip));
+    }
+
+    private System.Collections.IEnumerator CrossfadeCoroutine(AudioClip newClip)
+    {
+        // Set new clip on nextMusic source
+        nextMusic.clip = newClip;
+        nextMusic.Play();
+
+        float t = 0f;
+
+        float startVol = currentMusic.volume;
+        float targetVol = 1f;
+
+        while (t < crossfadeTime)
+        {
+            t += Time.deltaTime;
+            float normalized = t / crossfadeTime;
+
+            currentMusic.volume = Mathf.Lerp(startVol, 0f, normalized);
+            nextMusic.volume = Mathf.Lerp(0f, targetVol, normalized);
+
+            yield return null;
+        }
+
+        // Ensure values end cleanly
+        currentMusic.volume = 0f;
+        nextMusic.volume = 1f;
+
+        // Stop old track
+        currentMusic.Stop();
+
+        // Swap roles
+            AudioSource temp = currentMusic;
+            currentMusic = nextMusic;
+            nextMusic = temp;
+        }
 
     private void Update()
     {
@@ -41,11 +98,18 @@ public class GameManager : MonoBehaviour
     public void StartGame()
     {
         Debug.Log("GAME START");
+
+        //Flush serial monitor buffer before game starts
+        foreach (var blaster in FindObjectsOfType<MPUBlaster2D>())
+        {
+            blaster.ClearSerialBuffer();
+        }
+
         ResetAll();
 
         State = GameState.Gameplay;
 
-        PlayGameplayMusic();
+        CrossfadeTo(gameplayMusic);
 
         GameTimer.Instance.StartTimer();
     }
@@ -54,7 +118,7 @@ public class GameManager : MonoBehaviour
     {
         State = GameState.GameOver;
 
-        PlayIdleMusic(); // Goes back to original audio track
+        CrossfadeTo(idleMusic);
 
         GameTimer.Instance.ShowGameOver();
     }
@@ -90,21 +154,4 @@ public class GameManager : MonoBehaviour
         return 0;
     }
 
-    // ===== AUDIO CONTROL =====
-
-    private void PlayIdleMusic()
-    {
-        if (audioSource == null || idleMusic == null) return;
-        audioSource.loop = true;
-        audioSource.clip = idleMusic;
-        audioSource.Play();
-    }
-
-    private void PlayGameplayMusic()
-    {
-        if (audioSource == null || gameplayMusic == null) return;
-        audioSource.loop = true;
-        audioSource.clip = gameplayMusic;
-        audioSource.Play();
-    }
 }

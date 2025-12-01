@@ -70,6 +70,15 @@ public class MPUBlaster2D : MonoBehaviour
         }
     }
 
+    public void ClearSerialBuffer()
+    {
+        if (serial != null && serial.IsOpen)
+        {
+            serial.DiscardInBuffer();
+            serial.DiscardOutBuffer();
+        }
+    }
+
     void Update()
     {
         if (GameManager.Instance.State != GameManager.GameState.Gameplay)

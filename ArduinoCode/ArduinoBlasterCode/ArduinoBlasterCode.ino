@@ -5,16 +5,27 @@
 
 Adafruit_MPU6050 mpu;
 
-const int buttonPin = 7; // your trigger button
-int buttonState = HIGH;  // default HIGH with INPUT_PULLUP
+const int buttonPin = 7; 
+int buttonState = HIGH;
 
-float pitch = 0.0, yawRate = 0.0;
+float pitch = 0.0;
+float pitchOffset = 0.0;
+float yawOffset = 0.0;
+
+float yaw   = 0.0;
+
 unsigned long lastTime = 0;
-float yaw = 0.0;
-float yawBias = 0.0;
-bool calibrated = false;
-unsigned long calibStart;
 
+// ---- Drift correction ----
+float yawBias = 0.0;
+const float STILL_THRESHOLD_RAD = 0.07f;   // rad/s below this = still
+const float BIAS_ALPHA = 0.001f;          // slow bias learning
+const float DEADZONE_DEG = 0.15f;         // ignore tiny yaw noise
+
+// ---- Auto recenter ----
+unsigned long stillStartTime = 0;
+bool wasStillLastFrame = false;
+const unsigned long RECENTER_TIME_MS = 1500;  // 1.5s
 
 void setup() {
   Serial.begin(115200);
@@ -32,50 +43,69 @@ void setup() {
   mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
   delay(100);
 
-  // ---- YAW CALIBRATION ----
-  Serial.println("Calibrating yaw... keep still for 2 seconds");
-  calibStart = millis();
-
-  float sum = 0;
-  int count = 0;
-
-  while (millis() - calibStart < 2000) {
-    sensors_event_t accel, gyro, temp;
-    mpu.getEvent(&accel, &gyro, &temp);
-    sum += gyro.gyro.z;      // raw rad/s value
-    count++;
-    delay(5);
-  }
-
-  yawBias = sum / count;     // average drift rate
-  Serial.print("Yaw bias: "); Serial.println(yawBias, 5);
-
   lastTime = millis();
 }
-
 
 void loop() {
   sensors_event_t accel, gyro, temp;
   mpu.getEvent(&accel, &gyro, &temp);
 
-  float accelPitch = atan2(accel.acceleration.y, accel.acceleration.z) * 180 / PI;
-
+  // Time step
   unsigned long now = millis();
-  float dt = (now - lastTime) / 1000.0;
+  float dt = (now - lastTime) / 1000.0f;
   lastTime = now;
+  if (dt <= 0) dt = 0.001f;
 
-  pitch = 0.9 * (pitch + gyro.gyro.y * dt * 180 / PI) + 0.1 * accelPitch;
+  // ----- Pitch complementary filter -----
+  float accelPitch = atan2(accel.acceleration.y, accel.acceleration.z) * 180 / PI;
+  float gyroPitchRateDeg = gyro.gyro.y * 180 / PI;
+  pitch = 0.9f * (pitch + gyroPitchRateDeg * dt) + 0.1f * accelPitch;
 
-  // Apply yaw drift correction
-  float correctedYawRate = (gyro.gyro.z - yawBias) * 180 / PI;
-  yaw += correctedYawRate * dt;
+  // ----- Yaw drift correction -----
+  float gz = gyro.gyro.z;  // rad/s
 
+  // If nearly still: learn bias slowly
+  bool isStill = (fabs(gz) < STILL_THRESHOLD_RAD);
+
+  if (isStill) {
+    yawBias = yawBias * (1.0f - BIAS_ALPHA) + (BIAS_ALPHA * gz);
+  }
+
+  float correctedYawRateRad = gz - yawBias;
+  float correctedYawRateDeg = correctedYawRateRad * 180.0f / PI;
+
+  // Deadzone
+  if (fabs(correctedYawRateDeg) < DEADZONE_DEG) {
+    correctedYawRateDeg = 0;
+  }
+
+  yaw += correctedYawRateDeg * dt;
+
+  // ----- AUTO RECENTER: held still for 2 seconds -----
+  if (isStill) {
+    if (!wasStillLastFrame) {
+        stillStartTime = now;
+    }
+
+    if (now - stillStartTime >= RECENTER_TIME_MS) {
+        pitchOffset = pitch;   // store current natural pitch
+        yawOffset   = yaw;     // store current yaw
+    }
+
+    wasStillLastFrame = true;
+  } else {
+    wasStillLastFrame = false;
+  }
+
+  // Button
   buttonState = digitalRead(buttonPin);
 
-  // Output yaw instead of raw yawRate
-  Serial.print(pitch, 2);
+  float outPitch = pitch - pitchOffset;
+  float outYaw   = yaw   - yawOffset;
+
+  Serial.print(outPitch, 2);
   Serial.print(",0,");
-  Serial.print(yaw, 2);
+  Serial.print(outYaw, 2);
   Serial.print(",");
   Serial.println(buttonState == LOW ? 1 : 0);
 
