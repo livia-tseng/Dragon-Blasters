@@ -34,9 +34,10 @@ public class MPUBlaster2D : MonoBehaviour
     public AudioClip shootSound;
 
     private SerialPort serial;
-    private float latestPitch, latestGz;
-    private float filteredPitch, filteredYaw;
-    private float yaw;
+    private float latestPitch = 0f;
+    private float latestYaw = 0f;
+    private float filteredPitch = 0f;
+    private float filteredYaw = 0f;
     private float pitchOffset = 0f;
     private float yawOffset = 0f;
 
@@ -81,18 +82,15 @@ public class MPUBlaster2D : MonoBehaviour
                 if (parts.Length >= 4)
                 {
                     float.TryParse(parts[0], out latestPitch);
-                    float.TryParse(parts[2], out latestGz);
+                    float.TryParse(parts[2], out latestYaw);
                     int.TryParse(parts[3], out triggerPressed);
                 }
             }
             catch { }
         }
 
-        // --- Integrate yaw and smooth both axes ---
-        float gz = Mathf.Abs(latestGz) < 0.3f ? 0f : latestGz;
-        yaw -= gz * Time.deltaTime;
         filteredPitch = Mathf.Lerp(filteredPitch, latestPitch, 1f - smoothing);
-        filteredYaw = Mathf.Lerp(filteredYaw, yaw, 1f - smoothing);
+        filteredYaw = Mathf.Lerp(filteredYaw, latestYaw, 1f - smoothing);
 
         // --- Calibration (press 'C') ---
         if (Input.GetKeyDown(KeyCode.C))
@@ -104,7 +102,7 @@ public class MPUBlaster2D : MonoBehaviour
 
         // --- Apply offsets + mount correction ---
         float displayPitch = -(filteredPitch - pitchOffset - mountPitchOffset);
-        float displayYaw = (filteredYaw - yawOffset);
+        float displayYaw = -(filteredYaw - yawOffset);
 
         // --- Move reticle ---
         if (reticle && mainCamera)
