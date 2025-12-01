@@ -43,7 +43,8 @@ public class SpriteOnClicked : MonoBehaviour
     /// <summary>Call this from blasters with a playerId (1, 2, etc).</summary>
     public void TryHit(int playerId)
     {
-        if (GameTimer.Instance.isGameOver() || busy || !col.enabled) return;
+        if (GameManager.Instance.State != GameManager.GameState.Gameplay || busy || !col.enabled)
+            return;
 
         // Hook your score system here:
         // Debug.Log($"TryHit" + playerId);

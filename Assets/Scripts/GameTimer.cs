@@ -13,9 +13,8 @@ public class GameTimer : MonoBehaviour
     [Header("Time Duration")]
     public float duration = 60f;
 
-    private bool gameOver = false;
-
     private float timeRemaining;
+    private bool running = false;
 
     private void Awake()
     {
@@ -23,37 +22,31 @@ public class GameTimer : MonoBehaviour
         GameOverScreen.SetActive(false);
     }
 
-    private void Start()
+    public void StartTimer()
     {
+        running = true;
         timeRemaining = duration;
+        GameOverScreen.SetActive(false);
     }
 
     private void Update()
     {
-        if (gameOver) return;
+        if (!running) return;
 
         timeRemaining -= Time.deltaTime;
 
-        // Update the text (optional)
         if (timerText)
-        {
             timerText.text = Mathf.Ceil(timeRemaining).ToString();
-        }
 
-        // Trigger game over
         if (timeRemaining <= 0f)
         {
-            GameOver();
+            running = false;
+            GameManager.Instance.EndGame();
         }
     }
 
-    private void GameOver()
+    public void ShowGameOver()
     {
-        gameOver = true;
-        timeRemaining = 0f;
-
-        Debug.Log("GAME OVER");
-
         GameOverScreen.SetActive(true);
 
         int winner = GameManager.Instance.Winner();
@@ -61,10 +54,4 @@ public class GameTimer : MonoBehaviour
         else if (winner == 2) WinnerText.text = "Player 2 Wins!";
         else WinnerText.text = "Players Tie!";
     }
-
-    public bool isGameOver()
-    {
-        return gameOver;
-    }
 }
-

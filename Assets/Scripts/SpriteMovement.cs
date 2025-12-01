@@ -47,6 +47,9 @@ public class SpriteMover2D : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (GameManager.Instance.State != GameManager.GameState.Gameplay)
+            return;
+
         switch (mode)
         {
             case MovementMode.Idle:

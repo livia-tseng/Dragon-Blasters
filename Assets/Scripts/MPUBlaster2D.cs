@@ -72,6 +72,9 @@ public class MPUBlaster2D : MonoBehaviour
 
     void Update()
     {
+        if (GameManager.Instance.State != GameManager.GameState.Gameplay)
+            return;
+
         // --- Read serial data ---
         if (serial != null && serial.IsOpen && serial.BytesToRead > 0)
         {
